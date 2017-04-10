@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = %q{dmitry.lyaschuck@gmail.com}
 
   spec.summary       = %q{Upload .ipa file to diawi.com}
-  # spec.homepage      = "https://github.com/<GITHUB_USERNAME>/fastlane-plugin-diawi"
+  spec.homepage      = "https://github.com/pacification/fastlane-plugin-diawi"
   spec.license       = "MIT"
 
   spec.files         = Dir["lib/**/*"] + %w(README.md LICENSE)
