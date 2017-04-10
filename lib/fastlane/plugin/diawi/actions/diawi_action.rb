@@ -9,6 +9,8 @@ module Fastlane
 
     class DiawiAction < Action
 
+      ENDPOINT = "https://upload.diawi.com/"
+
       #####################################################
       # @!group Connection
       #####################################################
@@ -17,27 +19,25 @@ module Fastlane
         require 'faraday'
         require 'faraday_middleware'
 
-        connection = Faraday.new(:url => "https://upload.diawi.com")
-        # connection.get "/status", { :token: => token, :job => job }
-        connection.get do |request|
-            request.url = "/status"
-            request.params["token"] = token
-            request.params["job"] = job
+        connection = Faraday.new(:url => ENDPOINT) do |builder|
+          builder.request :url_encoded
+          builder.response :json, content_type: /\bjson$/
+          builder.use FaradayMiddleware::FollowRedirects
+          builder.adapter :net_http
         end
+        connection.get "/status", { :token => token, :job => job }
       end
 
       def self.upload_connection
         require 'faraday'
         require 'faraday_middleware'
 
-        endpoint = "https://upload.diawi.com/"
-
-        Faraday.new(url: endpoint) do |builder|
-            builder.request :multipart
-            builder.request :json
-            builder.response :json, content_type: /\bjson$/
-            builder.use FaradayMiddleware::FollowRedirects
-            builder.adapter :net_http
+        Faraday.new(url: ENDPOINT) do |builder|
+          builder.request :multipart
+          builder.request :url_encoded
+          builder.response :json, content_type: /\bjson$/
+          builder.use FaradayMiddleware::FollowRedirects
+          builder.adapter :net_http
         end
       end
 
@@ -50,7 +50,7 @@ module Fastlane
         # Polling frequence
         # Usually, processing of an upload will take from 0.5 to 5 seconds, so the best polling frequence would be every 1 second for up to 10 times.
         # If the status is still 2001 after 10 seconds, there probably is a problem, let us know.
-        availableRequestCount = 10 # 2 sec * 10 times = 20 sec for status check request else raise an error
+        availableRequestCount = 5 # 2 sec * 5 times = 10 sec for status check request else raise an error
         requestCount = 0
 
         status_ok = 2000
@@ -58,22 +58,22 @@ module Fastlane
         status_error = 4000
 
         while availableRequestCount > requestCount  do
-          connection = self.status_connection(token, job)
+          response = self.status_connection(token, job)
 
-          case connection.body["status"]
+          case response.body["status"]
           when status_ok
-            link = "https://i.diawi.com/#{connection.body['hash']}"
-            UI.message("Successfully upload file to diawi. Link: #{link}")
+            link = "https://i.diawi.com/#{response.body['hash']}"
+            UI.success("File successfully uploaded to diawi. Link: #{link}")
             Actions.lane_context[SharedValues::UPLOADED_FILE_LINK_TO_DIAWI] = link
             return
           when status_in_progress
             UI.message("Uploading...")
           when status_error
-            UI.error("Error uploading to diawi. Message: #{connection.body['message']}")
+            UI.error("Error uploading file to diawi. Message: #{response.body['message']}")
             UI.error("Try to upload file by yourself: #{file}")
             return
           else
-            UI.error("Unknown error uploading to diawi.")
+            UI.error("Unknown error uploading file to diawi.")
             UI.error("Try to upload file by yourself: #{file}")
             return
           end
@@ -82,25 +82,29 @@ module Fastlane
           sleep(2)
         end
 
-        UI.error("`In progress` status took more than 20 sec, so raise error. Check out the https://dashboard.diawi.com/. Maybe your file uploaded successfully.")
+        UI.error("`In progress` status took more than 10 sec, so raise error. Check out the https://dashboard.diawi.com/. Maybe your file has been uploaded successfully.")
         UI.error("If not, try to upload file by yourself: #{file}")
       end
 
-      def self.upload(file, options)
+      def self.upload(file, token, options)
         connection = self.upload_connection
-        options[:file] = Faraday::UploadIO.new(file, "application/octet-stream")
-        puts options
-        connection.post do |request|
+
+        options.update({
+          token: token,
+          file: Faraday::UploadIO.new(file, "application/octet-stream")
+        })
+
+        post_request = connection.post do |request|
           request.body = options
         end
 
-        @app.upload(options).on_complete do |response|
-            if response.body && response.body.key?("job")
-              return response.body["job"]
-            else
-              UI.error("Error uploading to diawi: #{response.body['message']}")
-              return
-            end
+        post_request.on_complete do |response|
+          if response.body && response.body.key?("job")
+            return response.body["job"]
+          else
+            UI.error("Error uploading file to diawi: #{response.body['message']}")
+            return
+          end
         end
       end
 
@@ -112,10 +116,22 @@ module Fastlane
         token = options[:token]
         file = options[:file]
 
-        job = self.upload(file, options)
+        upload_options = options.values.select do |key, value|
+          [:password, :comment, :callback_url, :callback_emails].include? key unless value.nil?
+        end
+
+        options.values.each do |key, value|
+          if [:find_by_udid, :wall_of_apps, :installation_notifications].include? key
+            upload_options[key] = value ? 1 : 0 unless value.nil?
+          end
+        end
+
+        UI.success("Starting with app upload to diawi... this could take some time ⏳")
+
+        job = self.upload(file, token, upload_options)
 
         if job
-            self.check_status_for_upload(file, token, job)
+          self.check_status_for_upload(file, token, job)
         end
       end
 
@@ -133,16 +149,18 @@ module Fastlane
                                   env_name: "DIAWI_FILE",
                                description: "Path to .ipa or .apk file",
                                   optional: false,
-                                  verify_block: proc do |value|
-                                    UI.user_error!("Couldn't find file at path '#{value}'") unless File.exist?(value)
-                                  end),
+                              verify_block: proc do |value|
+                                UI.user_error!("Couldn't find file at path '#{value}'") unless File.exist?(value)
+                              end),
           FastlaneCore::ConfigItem.new(key: :find_by_udid,
                                   env_name: "DIAWI_FIND_BY_UDID",
-                               description: "Allow your testers to find the app on diawi's mobile web app using their UDID (iOS only). Value should be true/false as 1/0",
+                               description: "Allow your testers to find the app on diawi's mobile web app using their UDID (iOS only)",
+                                 is_string: false,
                                   optional: true),
           FastlaneCore::ConfigItem.new(key: :wall_of_apps,
                                   env_name: "DIAWI_WALL_OF_APPS",
-                               description: "Allow diawi to display the app's icon on the wall of apps. Value should be true/false as 1/0",
+                               description: "Allow diawi to display the app's icon on the wall of apps",
+                                 is_string: false,
                                   optional: true),
           FastlaneCore::ConfigItem.new(key: :password,
                                   env_name: "DIAWI_PASSWORD",
@@ -156,16 +174,17 @@ module Fastlane
                                   env_name: "DIAWI_CALLBACK_URL",
                                description: "The URL diawi should call with the result",
                                   optional: true,
-                                  verify_block: proc do |value|
-                                    UI.user_error!("The `callback_url` not valid.") if value =~ URI::regexp
-                                  end),
+                              verify_block: proc do |value|
+                                UI.user_error!("The `callback_url` not valid.") if value =~ URI::regexp
+                              end),
           FastlaneCore::ConfigItem.new(key: :callback_emails,
                                   env_name: "DIAWI_CALLBACK_EMAILS",
                                description: "The email addresses diawi will send the result to (up to 5 separated by commas for starter/premium/enterprise accounts, 1 for free accounts). Emails should be a string. Ex: \"example@test.com,example1@test.com\"",
                                   optional: true),
           FastlaneCore::ConfigItem.new(key: :installation_notifications,
                                   env_name: "DIAWI_INSTALLATION_NOTIFICATIONS",
-                               description: "Receive notifications each time someone installs the app (only starter/premium/enterprise accounts). Value should be true/false as 1/0",
+                               description: "Receive notifications each time someone installs the app (only starter/premium/enterprise accounts)",
+                                 is_string: false,
                                   optional: true)
         ]
       end
