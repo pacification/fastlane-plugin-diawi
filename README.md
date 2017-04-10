@@ -12,28 +12,40 @@ fastlane add_plugin diawi
 
 ## About diawi
 
-Upload .ipa file to diawi.com
+Diawi is a tool for developers to deploy Development and In-house applications directly to the devices.
+This plugin can upload .ipa and .apk file to diawi.
 
-**Note to author:** Add a more detailed description about this plugin here. If your plugin contains multiple actions, make sure to mention them here.
+## Available options
+
+Key | Required | Type | Description
+--- | --- | --- | ---
+**token** | **`true`** | `String` | [API access token](https://dashboard.diawi.com/profile/api)
+**file** | **`true`** | `String` | Path to .ipa or .apk file
+**find_by_udid** | `false` | `Boolean` | Allow your testers to find the app on diawi's mobile web app using their UDID (**iOS only**)
+**wall_of_apps** | `false` | `Boolean` | Allow diawi to display the app's icon on the wall of apps
+**password** | `false` | `String` | Protect your app with a password: it will be required to access the installation page
+**comment** | `false` | `String` | Additional information to your users on this build: the comment will be displayed on the installation page
+**callback_url** | `false` | `String` | The URL diawi should call with the result
+**callback_emails** | `false` | `String` | The email addresses diawi will send the result to (up to 5 separated by commas for starter/premium/enterprise accounts, 1 for free accounts). Emails should be a string. Ex: "example@test.com,example1@test.com"
+**installation_notifications** | `false` | `Boolean` | Receive notifications each time someone installs the app (only starter/premium/enterprise accounts)
+
+## Result link
+
+If file upload successfully, you can access result link by:  
+
+`lane_context[SharedValues::UPLOADED_FILE_LINK_TO_DIAWI]`
 
 ## Example
 
-Check out the [example `Fastfile`](fastlane/Fastfile) to see how to use this plugin. Try it by cloning the repo, running `fastlane install_plugins` and `bundle exec fastlane test`.
-
-**Note to author:** Please set up a sample project to make it easy for users to explore what your plugin does. Provide everything that is necessary to try out the plugin in this project (including a sample Xcode/Android project if necessary)
-
-## Run tests for this plugin
-
-To run both the tests, and code style validation, run
-
-```
-rake
+Minimal plugin configuration is:  
+```ruby
+diawi(
+    token: "your_api_token",
+    file: "path_to_ipa_or_apk_file"
+)
 ```
 
-To automatically fix many of the styling issues, use
-```
-rubocop -a
-```
+For more options see [**Available options**](#available-options) section.
 
 ## Issues and Feedback
 
