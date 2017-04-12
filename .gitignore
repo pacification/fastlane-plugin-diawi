@@ -1,0 +1,8 @@
+*.gem
+Gemfile.lock
+
+## Documentation cache and generated files:
+/doc/
+/rdoc/
+fastlane/README.md
+fastlane/report.xml
