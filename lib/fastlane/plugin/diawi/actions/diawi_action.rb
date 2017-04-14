@@ -126,7 +126,7 @@ module Fastlane
           end
         end
 
-        UI.success("Starting with app upload to diawi... this could take some time ⏳")
+        UI.success("Starting with app upload to diawi... this could take some time")
 
         job = self.upload(file, token, upload_options)
 
