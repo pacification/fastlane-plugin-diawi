@@ -35,6 +35,7 @@ module Fastlane
         Faraday.new(url: ENDPOINT) do |builder|
           builder.request :multipart
           builder.request :url_encoded
+          builder.request :retry
           builder.response :json, content_type: /\bjson$/
           builder.use FaradayMiddleware::FollowRedirects
           builder.adapter :net_http
@@ -69,12 +70,12 @@ module Fastlane
           when status_in_progress
             UI.message("Uploading...")
           when status_error
-            UI.error("Error uploading file to diawi. Message: #{response.body['message']}")
-            UI.error("Try to upload file by yourself: #{file}")
+            UI.warning("Error uploading file to diawi. Message: #{response.body['message']}")
+            UI.warning("Try to upload file by yourself: #{file}")
             return
           else
-            UI.error("Unknown error uploading file to diawi.")
-            UI.error("Try to upload file by yourself: #{file}")
+            UI.warning("Unknown error uploading file to diawi.")
+            UI.warning("Try to upload file by yourself: #{file}")
             return
           end
 
@@ -82,8 +83,8 @@ module Fastlane
           sleep(2)
         end
 
-        UI.error("`In progress` status took more than 10 sec, so raise error. Check out the https://dashboard.diawi.com/. Maybe your file has been uploaded successfully.")
-        UI.error("If not, try to upload file by yourself: #{file}")
+        UI.warning("`In progress` status took more than 10 sec, so raise error. Check out the https://dashboard.diawi.com/. Maybe your file has been uploaded successfully.")
+        UI.warning("If not, try to upload file by yourself: #{file}")
       end
 
       def self.upload(file, token, options)
@@ -102,7 +103,7 @@ module Fastlane
           if response.body && response.body.key?("job")
             return response.body["job"]
           else
-            UI.error("Error uploading file to diawi: #{response.body['message']}")
+            UI.warning("Error uploading file to diawi: #{response.body['message']}")
             return
           end
         end
