@@ -99,7 +99,6 @@ module Fastlane
                         polling_attempts += 1
                         sleep(2)
                         next
-
                     end
 
                     json = JSON.parse(response.body)
