@@ -7,7 +7,7 @@ module Fastlane
             UPLOADED_FILE_LINK_TO_DIAWI = :UPLOADED_FILE_LINK_TO_DIAWI
         end
 
-        class Diawi < Action
+        class DiawiAction < Action
 
             UPLOAD_URL = "https://upload.diawi.com/"
             STATUS_CHECK_URL = "https://upload.diawi.com/status"
@@ -29,11 +29,11 @@ module Fastlane
                     return
                 end
 
-                upload_options = options.select do |key, value|
+                upload_options = options.values.select do |key, value|
                     [:password, :comment, :callback_url, :callback_emails].include? key unless value.nil?
                 end
 
-                options.each do |key, value|
+                options.values.each do |key, value|
                     if [:find_by_udid, :wall_of_apps, :installation_notifications].include? key
                         upload_options[key] = value ? 1 : 0 unless value.nil?
                     end
@@ -58,7 +58,7 @@ module Fastlane
                 job = JSON.parse(response.body)['job']
 
                 if job
-                    return self.check_status(token, options[:file], job, options[:last_hope_attempts_count])
+                    return self.check_status(options[:token], options[:file], job, options[:last_hope_attempts_count])
                 end
 
                 UI.important("Something went wrong and `job` value didn't come from uploading request. Check out your dashboard: https://dashboard.diawi.com/. Maybe your file already has been uploaded successfully.")
@@ -178,7 +178,7 @@ module Fastlane
                                             optional: true),
                     FastlaneCore::ConfigItem.new(key: :last_hope_attempts_count,
                                             env_name: "DIAWI_LAST_HOPE_ATTEMPTS_COUNT",
-                                         description: "Number of attempts to check status after last attempt. Default - 1, max - 5. (See more at `self.check_status` func comment).",
+                                         description: "Number of attempts to check status after last attempt. Default - 1, max - 5. (See more at `self.check_status` func comment)",
                                            is_string: false,
                                             optional: true,
                                        default_value: 1)
