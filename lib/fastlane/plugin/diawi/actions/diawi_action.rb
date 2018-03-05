@@ -7,7 +7,7 @@ module Fastlane
             UPLOADED_FILE_LINK_TO_DIAWI = :UPLOADED_FILE_LINK_TO_DIAWI
         end
 
-        class Diawi < Action
+        class DiawiAction < Action
 
             UPLOAD_URL = "https://upload.diawi.com/"
             STATUS_CHECK_URL = "https://upload.diawi.com/status"
