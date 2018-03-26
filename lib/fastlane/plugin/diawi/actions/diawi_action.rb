@@ -93,7 +93,7 @@ module Fastlane
                 # "processing of an upload will take a few seconds: a base rule would be to poll every 2 seconds".
                 #
                 # here introduced sleep 2 seconds before first check requst.
-                # it should solve the problem with small file size (> 10 mb).
+                # it should solve the problem with check status of small file size (> 10 mb).
                 # if you need more attempts, use `DIAWI_LAST_HOPE_ATTEMPTS_COUNT`.
                 sleep(2)
 
