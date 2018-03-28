@@ -88,6 +88,15 @@ module Fastlane
                 status_in_progress = 2001
                 status_error = 4000
 
+                # According to:
+                #
+                # "processing of an upload will take a few seconds: a base rule would be to poll every 2 seconds".
+                #
+                # here introduced sleep 2 seconds before first check requst.
+                # it should solve the problem with check status of small file size (> 10 mb).
+                # if you need more attempts, use `DIAWI_LAST_HOPE_ATTEMPTS_COUNT`.
+                sleep(2)
+
                 while polling_count > polling_attempts  do
                     response = RestClient.get STATUS_CHECK_URL, {params: {token: token, job: job}}
 
