@@ -156,7 +156,7 @@ module Fastlane
                                             optional: false),
                     FastlaneCore::ConfigItem.new(key: :file,
                                             env_name: "DIAWI_FILE",
-                                         description: "Path to .ipa or .apk file. Default uses `IPA_OUTPUT_PATH` or `GRADLE_APK_OUTPUT_PATH` based on platform",
+                                         description: "Path to .ipa or .apk file. Default - `IPA_OUTPUT_PATH` or `GRADLE_APK_OUTPUT_PATH` based on platform",
                                             optional: true,
                                        default_value: self.default_file_path),
                     FastlaneCore::ConfigItem.new(key: :find_by_udid,

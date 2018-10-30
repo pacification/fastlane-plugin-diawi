@@ -20,7 +20,7 @@ This plugin can upload .ipa and .apk file to diawi.
 Key | Required | Type | Description
 --- | --- | --- | ---
 **token** | **`true`** | `String` | [API access token](https://dashboard.diawi.com/profile/api)
-**file** | **`true`** | `String` | Path to .ipa or .apk file
+**file** | `false` | `String` | Path to .ipa or .apk file. Default - `IPA_OUTPUT_PATH` or `GRADLE_APK_OUTPUT_PATH` based on platform
 **find_by_udid** | `false` | `Boolean` | Allow your testers to find the app on diawi's mobile web app using their UDID (**iOS only**)
 **wall_of_apps** | `false` | `Boolean` | Allow diawi to display the app's icon on the wall of apps
 **password** | `false` | `String` | Protect your app with a password: it will be required to access the installation page
