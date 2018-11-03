@@ -137,6 +137,13 @@ module Fastlane
                 UI.important("Try to upload file by yourself: #{file}")
             end
 
+            def self.default_file_path
+                platform = Actions.lane_context[SharedValues::PLATFORM_NAME]
+                ios_path = Actions.lane_context[SharedValues::IPA_OUTPUT_PATH]
+                android_path = Actions.lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]
+                return platform == :ios ? ios_path : android_path 
+            end
+
             #####################################################
             # @!group Documentation
             #####################################################
@@ -149,8 +156,9 @@ module Fastlane
                                             optional: false),
                     FastlaneCore::ConfigItem.new(key: :file,
                                             env_name: "DIAWI_FILE",
-                                         description: "Path to .ipa or .apk file",
-                                            optional: false),
+                                         description: "Path to .ipa or .apk file. Default - `IPA_OUTPUT_PATH` or `GRADLE_APK_OUTPUT_PATH` based on platform",
+                                            optional: true,
+                                       default_value: self.default_file_path),
                     FastlaneCore::ConfigItem.new(key: :find_by_udid,
                                             env_name: "DIAWI_FIND_BY_UDID",
                                          description: "Allow your testers to find the app on diawi's mobile web app using their UDID (iOS only)",
