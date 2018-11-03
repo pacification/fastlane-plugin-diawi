@@ -138,10 +138,10 @@ module Fastlane
             end
 
             def self.default_file_path
-            	platform = Actions.lane_context[SharedValues::PLATFORM_NAME]
-            	return platform == :ios
-            		? Actions.lane_context[SharedValues::IPA_OUTPUT_PATH]
-            		: Actions.lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]
+                platform = Actions.lane_context[SharedValues::PLATFORM_NAME]
+                ios_path = Actions.lane_context[SharedValues::IPA_OUTPUT_PATH]
+                android_path = Actions.lane_context[SharedValues::GRADLE_APK_OUTPUT_PATH]
+                return platform == :ios ? ios_path : android_path 
             end
 
             #####################################################
