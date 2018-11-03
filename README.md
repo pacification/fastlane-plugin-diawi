@@ -65,8 +65,7 @@ If file upload successfully, you can access result link by:
 Minimal plugin configuration is:  
 ```ruby
 diawi(
-    token: "your_api_token",
-    file: "path_to_ipa_or_apk_file"
+    token: "your_api_token"
 )
 ```
 
