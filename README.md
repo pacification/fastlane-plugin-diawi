@@ -29,6 +29,7 @@ Key | Required | Type | Description
 **callback_emails** | `false` | `String` | The email addresses diawi will send the result to (up to 5 separated by commas for starter/premium/enterprise accounts, 1 for free accounts). Emails should be a string. Ex: "example@test.com,example1@test.com"
 **installation_notifications** | `false` | `Boolean` | Receive notifications each time someone installs the app (only starter/premium/enterprise accounts)
 **last_hope_attempts_count**⁺ | `false` | `Int` | Number of extra attempts to check file status (default: 1, max: 5, not in range (1...5): 1)
+**last_hope_attempts_backoff**⁺ | `false` | `Int` | Number of seconds to wait between repeated attempts at checking upload status. Default - 2
 
 <details><summary>⁺ Explanation</summary><p>
     
