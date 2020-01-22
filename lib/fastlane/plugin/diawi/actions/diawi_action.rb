@@ -58,14 +58,14 @@ module Fastlane
                 job = JSON.parse(response.body)['job']
 
                 if job
-                    return self.check_status(options[:token], options[:file], job, options[:last_hope_attempts_count])
+                    return self.check_status(options[:token], options[:file], job, options[:last_hope_attempts_count], options[:last_hope_attempts_backoff])
                 end
 
                 UI.important("Something went wrong and `job` value didn't come from uploading request. Check out your dashboard: https://dashboard.diawi.com/. Maybe your file already has been uploaded successfully.")
                 UI.important("If not, try to upload file by yourself. Path: #{options[:file]}")
             end
 
-            def self.check_status(token, file, job, last_hope_attempts_count)
+            def self.check_status(token, file, job, last_hope_attempts_count, last_hope_attempts_backoff)
                 # From documendation:
 
                 # Polling frequence
@@ -130,7 +130,7 @@ module Fastlane
                     end
 
                     polling_attempts += 1
-                    sleep(2)
+                    sleep(last_hope_attempts_backoff)
                 end
 
                 UI.important("File is not processed.")
@@ -198,7 +198,13 @@ module Fastlane
                                          description: "Number of attempts to check status after last attempt. Default - 1, max - 5. (See more at `self.check_status` func comment)",
                                            is_string: false,
                                             optional: true,
-                                       default_value: 1)
+                                       default_value: 1),
+                    FastlaneCore::ConfigItem.new(key: :last_hope_attempts_backoff,
+                                            env_name: "DIAWI_LAST_HOPE_ATTEMPTS_BACKOFF",
+                                         description: "Number of seconds to wait between repeated attempts at checking upload status. Default - 2. (See more at `self.check_status` func comment)",
+                                           is_string: false,
+                                            optional: true,
+                                       default_value: 2)
                 ]
             end
 
