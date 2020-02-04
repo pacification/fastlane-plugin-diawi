@@ -56,7 +56,8 @@ module Fastlane
                 end
 
                 job = JSON.parse(response.body)['job']
-
+                UI.success("Upload success. Processing started, job=#{job} Please, be patient. This could take some time.")
+                
                 if job
                     return self.check_status(options[:token], options[:file], job, options[:last_hope_attempts_count], options[:last_hope_attempts_backoff])
                 end
