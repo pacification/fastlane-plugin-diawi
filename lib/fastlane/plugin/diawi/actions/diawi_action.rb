@@ -56,49 +56,33 @@ module Fastlane
                 end
 
                 job = JSON.parse(response.body)['job']
-                UI.success("Upload success. Processing started, job=#{job} Please, be patient. This could take some time.")
                 
                 if job
-                    return self.check_status(options[:token], options[:file], job, options[:last_hope_attempts_count], options[:last_hope_attempts_backoff])
+                    timeout = options[:timeout].clamp(5, 240)
+                    check_status_delay = options[:check_status_delay].clamp(1, 30)
+
+                    if check_status_delay > timeout
+                        UI.important("`check_status_delay` is greater than `timeout`")
+                    end
+
+                    UI.success("Upload completed successfully.")
+                    UI.success("\n\nProcessing started with params:\n\njob: #{job}\ntimeout: #{timeout},\ncheck_status_delay: #{check_status_delay}\n")
+                    return self.check_status(options[:token], options[:file], job, options[:timeout], options[:check_status_delay])
                 end
 
                 UI.important("Something went wrong and `job` value didn't come from uploading request. Check out your dashboard: https://dashboard.diawi.com/. Maybe your file already has been uploaded successfully.")
                 UI.important("If not, try to upload file by yourself. Path: #{options[:file]}")
             end
 
-            def self.check_status(token, file, job, last_hope_attempts_count, last_hope_attempts_backoff)
-                # From documendation:
-
-                # Polling frequence
-                # Usually, processing of an upload will take a few seconds:
-                # so, a base rule would be to poll every 2 seconds for up to 5 times and should match most simple use-cases.
-
-                # For larger apps, a longer processing might be needed on our side.
-                # A rule of thumb would be to wait up to 1 second for each 10 MB of the app.
-                # In other words, up to 10 seconds for a 100 MB app, 50 seconds for a 500 MB app, and so on…
-
-                # ^ Based on this here we calculate polling_count
-
-                file_size = (File.size(file).to_i) / 2**20
-                additional_polling_count = last_hope_attempts_count.between?(1, 5) ? last_hope_attempts_count : 1
-                polling_count = file_size / 10 + additional_polling_count # also add "last hope" attempts
-
-                polling_attempts = 0
-
+            def self.check_status(token, file, job, timeout, check_status_delay)
                 status_ok = 2000
                 status_in_progress = 2001
                 status_error = 4000
 
-                # According to:
-                #
-                # "processing of an upload will take a few seconds: a base rule would be to poll every 2 seconds".
-                #
-                # here introduced sleep 2 seconds before first check requst.
-                # it should solve the problem with check status of small file size (> 10 mb).
-                # if you need more attempts, use `DIAWI_LAST_HOPE_ATTEMPTS_COUNT`.
-                sleep(2)
+                timeout_time = Time.now + timeout
+                current_time = Time.now
 
-                while polling_count > polling_attempts  do
+                while timeout_time > current_time  do
                     response = RestClient.get STATUS_CHECK_URL, {params: {token: token, job: job}}
 
                     begin
@@ -106,8 +90,8 @@ module Fastlane
                     rescue RestClient::ExceptionWithResponse => error
                         UI.important("Check file status request error:")
                         UI.important(error)
-                        polling_attempts += 1
-                        sleep(2)
+                        sleep(check_status_delay)
+                        current_time = Time.now
                         next
                     end
 
@@ -130,8 +114,8 @@ module Fastlane
                         UI.important("Unknown error uploading file to diawi.")
                     end
 
-                    polling_attempts += 1
-                    sleep(last_hope_attempts_backoff)
+                    sleep(check_status_delay)
+                    current_time = Time.now
                 end
 
                 UI.important("File is not processed.")
@@ -194,18 +178,18 @@ module Fastlane
                                          description: "Receive notifications each time someone installs the app (only starter/premium/enterprise accounts)",
                                            is_string: false,
                                             optional: true),
-                    FastlaneCore::ConfigItem.new(key: :last_hope_attempts_count,
-                                            env_name: "DIAWI_LAST_HOPE_ATTEMPTS_COUNT",
-                                         description: "Number of attempts to check status after last attempt. Default - 1, max - 5. (See more at `self.check_status` func comment)",
+                    FastlaneCore::ConfigItem.new(key: :timeout,
+                                            env_name: "DIAWI_TIMEOUT",
+                                         description: "Timeout for checking upload status in seconds. Default: 60, range: (5, 240)",
                                            is_string: false,
                                             optional: true,
-                                       default_value: 1),
-                    FastlaneCore::ConfigItem.new(key: :last_hope_attempts_backoff,
-                                            env_name: "DIAWI_LAST_HOPE_ATTEMPTS_BACKOFF",
-                                         description: "Number of seconds to wait between repeated attempts at checking upload status. Default - 2. (See more at `self.check_status` func comment)",
+                                       default_value: 60),
+                    FastlaneCore::ConfigItem.new(key: :check_status_delay,
+                                            env_name: "DIAWI_CHECK_STATUS_DELAY",
+                                         description: "Number of seconds to wait between repeated attempts at checking upload status. Default: 3, range: (1, 30)",
                                            is_string: false,
                                             optional: true,
-                                       default_value: 2)
+                                       default_value: 3)
                 ]
             end
 
