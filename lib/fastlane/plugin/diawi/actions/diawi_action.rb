@@ -91,6 +91,7 @@ module Fastlane
                         UI.important("Check file status request error:")
                         UI.important(error)
                         sleep(check_status_delay)
+                        current_time = Time.now
                         next
                     end
 
@@ -114,6 +115,7 @@ module Fastlane
                     end
 
                     sleep(check_status_delay)
+                    current_time = Time.now
                 end
 
                 UI.important("File is not processed.")
