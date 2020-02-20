@@ -178,7 +178,7 @@ module Fastlane
                                             optional: true),
                     FastlaneCore::ConfigItem.new(key: :timeout,
                                             env_name: "DIAWI_TIMEOUT",
-                                         description: "Timeout for cheching upload status in seconds. Default: 60, range: (5, 240)",
+                                         description: "Timeout for checking upload status in seconds. Default: 60, range: (5, 240)",
                                            is_string: false,
                                             optional: true,
                                        default_value: 60),

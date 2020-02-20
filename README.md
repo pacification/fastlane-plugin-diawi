@@ -15,12 +15,22 @@ fastlane add_plugin diawi
 Diawi is a tool for developers to deploy Development and In-house applications directly to the devices.
 This plugin can upload .ipa and .apk file to diawi.
 
+## Migration to 2.0.0
+
+`last_hope_attempts_count` - removed.
+
+`last_hope_attempts_backoff` - renamed to `check_status_delay`.
+
+`timeout` - new key.
+
+For more info see [2.0.0 pull request]().
+
 ## Available options
 
 Key | Required | Type | Description
 --- | --- | --- | ---
 **token** | **`true`** | `String` | [API access token](https://dashboard.diawi.com/profile/api)
-**file** | `false` | `String` | Path to .ipa or .apk file. Default - `IPA_OUTPUT_PATH` or `GRADLE_APK_OUTPUT_PATH` based on platform
+**file** | `false` | `String` | Path to .ipa or .apk file.<br>default: `IPA_OUTPUT_PATH` or `GRADLE_APK_OUTPUT_PATH` based on platform
 **find_by_udid** | `false` | `Boolean` | Allow your testers to find the app on diawi's mobile web app using their UDID (**iOS only**)
 **wall_of_apps** | `false` | `Boolean` | Allow diawi to display the app's icon on the wall of apps
 **password** | `false` | `String` | Protect your app with a password: it will be required to access the installation page
@@ -28,32 +38,8 @@ Key | Required | Type | Description
 **callback_url** | `false` | `String` | The URL diawi should call with the result
 **callback_emails** | `false` | `String` | The email addresses diawi will send the result to (up to 5 separated by commas for starter/premium/enterprise accounts, 1 for free accounts). Emails should be a string. Ex: "example@test.com,example1@test.com"
 **installation_notifications** | `false` | `Boolean` | Receive notifications each time someone installs the app (only starter/premium/enterprise accounts)
-**last_hope_attempts_count**⁺ | `false` | `Int` | Number of extra attempts to check file status (default: 1, max: 5, not in range (1...5): 1)
-**last_hope_attempts_backoff**⁺ | `false` | `Int` | Number of seconds to wait between repeated attempts at checking upload status. Default - 2
-
-<details><summary>⁺ Explanation</summary><p>
-    
-From [diawi's documentation](https://dashboard.diawi.com/docs/apis/upload):
-
-> Polling frequence  
-> If possible, prefer using the callbacks than the polling: they will always provide you with the result as soon as it is available.
->
-> Usually, processing of an upload will take a few seconds: so, a base rule would be to poll every 2 seconds for up to 5 times and should match most simple use-cases.
->
-> For larger apps, a longer processing might be needed on our side. A rule of thumb would be to wait up to 1 second for each 10 MB of the app. In other words, up to 10 seconds for a 100 MB app, 50 seconds for a 500 MB app, and so on…
->
-> If the status is still 2001 after that duration, there probably is a problem, let us know.
-
-Technically your app can be uploaded to diawi, but still processing for a while. In this case `last_hope_attempts_count` can add extra `n` check status requests.
-
-Example:  
-```ruby
-last_hope_attempts_count = 3  
-app_size = 23 MB  
-check_attempts = 23 / 10 + last_hope_attempts_count = 5 # total attempts is 5; but it will return at first success response
-```
-    
-</p></details>
+**timeout** | `false` | `Int` | Timeout for checking upload status in seconds.<br>default: 60<br>range: (5, 240)
+**check_status_delay** | `false` | `Int` | Number of seconds to wait between repeated attempts at checking upload status.<br>default: 3<br>range: (1, 30)
 
 ## Result link
 
