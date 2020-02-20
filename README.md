@@ -23,7 +23,7 @@ This plugin can upload .ipa and .apk file to diawi.
 
 `timeout` - new key.
 
-For more info see [2.0.0 pull request]().
+For more info see [2.0.0 pull request](https://github.com/pacification/fastlane-plugin-diawi/pull/16).
 
 ## Available options
 
