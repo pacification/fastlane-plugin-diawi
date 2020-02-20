@@ -30,7 +30,7 @@ For more info see [2.0.0 pull request]().
 Key | Required | Type | Description
 --- | --- | --- | ---
 **token** | **`true`** | `String` | [API access token](https://dashboard.diawi.com/profile/api)
-**file** | `false` | `String` | Path to .ipa or .apk file.<br>default: `IPA_OUTPUT_PATH` or `GRADLE_APK_OUTPUT_PATH` based on platform
+**file** | `false` | `String` | Path to .ipa or .apk file.<br>**Default**: `IPA_OUTPUT_PATH` or `GRADLE_APK_OUTPUT_PATH` based on platform
 **find_by_udid** | `false` | `Boolean` | Allow your testers to find the app on diawi's mobile web app using their UDID (**iOS only**)
 **wall_of_apps** | `false` | `Boolean` | Allow diawi to display the app's icon on the wall of apps
 **password** | `false` | `String` | Protect your app with a password: it will be required to access the installation page
@@ -38,8 +38,8 @@ Key | Required | Type | Description
 **callback_url** | `false` | `String` | The URL diawi should call with the result
 **callback_emails** | `false` | `String` | The email addresses diawi will send the result to (up to 5 separated by commas for starter/premium/enterprise accounts, 1 for free accounts). Emails should be a string. Ex: "example@test.com,example1@test.com"
 **installation_notifications** | `false` | `Boolean` | Receive notifications each time someone installs the app (only starter/premium/enterprise accounts)
-**timeout** | `false` | `Int` | Timeout for checking upload status in seconds.<br>default: 60<br>range: (5, 240)
-**check_status_delay** | `false` | `Int` | Number of seconds to wait between repeated attempts at checking upload status.<br>default: 3<br>range: (1, 30)
+**timeout** | `false` | `Int` | Timeout for checking upload status in seconds.<br>**Default**: 60<br>**Range**: (5, 240)
+**check_status_delay** | `false` | `Int` | Number of seconds to wait between repeated attempts at checking upload status.<br>**Default**: 3<br>**Range**: (1, 30)
 
 ## Result link
 
