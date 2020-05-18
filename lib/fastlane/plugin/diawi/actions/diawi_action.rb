@@ -58,7 +58,7 @@ module Fastlane
                 job = JSON.parse(response.body)['job']
                 
                 if job
-                    timeout = options[:timeout].clamp(5, 240)
+                    timeout = options[:timeout].clamp(5, 1800)
                     check_status_delay = options[:check_status_delay].clamp(1, 30)
 
                     if check_status_delay > timeout
@@ -180,7 +180,7 @@ module Fastlane
                                             optional: true),
                     FastlaneCore::ConfigItem.new(key: :timeout,
                                             env_name: "DIAWI_TIMEOUT",
-                                         description: "Timeout for checking upload status in seconds. Default: 60, range: (5, 240)",
+                                         description: "Timeout for checking upload status in seconds. Default: 60, range: (5, 1800)",
                                            is_string: false,
                                             optional: true,
                                        default_value: 60),
